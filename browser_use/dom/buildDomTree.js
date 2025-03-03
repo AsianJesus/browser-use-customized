@@ -2,7 +2,7 @@
   args = {
     doHighlightElements: true,
     focusHighlightIndex: -1,
-    viewportExpansion: 0,
+    viewportExpansion: 0, 
     debugMode: false,
   }
 ) => {
@@ -29,6 +29,7 @@
   }
 
   // Only initialize performance tracking if in debug mode
+  // Initialises when debug mode is true
   const PERF_METRICS = debugMode ? {
     buildDomTreeCalls: 0,
     timings: {
@@ -98,7 +99,9 @@
 
     return result;
   }
-
+  //Garbage collection in JavaScript automatically frees up memory by removing objects that are no longer reachable in the code, helping to prevent memory leaks.
+  //WeakMap is a special kind of map where the keys are weakly referenced, meaning if there are no other references to the key object,
+  //it can be garbage collected, which helps optimize memory usage.
   // Add caching mechanisms at the top level
   const DOM_CACHE = {
     boundingRects: new WeakMap(),
@@ -190,13 +193,17 @@
   /**
    * Highlights an element in the DOM and returns the index of the next element.
    */
+
   function highlightElement(element, index, parentIframe = null) {
     if (!element) return index;
 
     try {
       // Create or get highlight container
       let container = document.getElementById(HIGHLIGHT_CONTAINER_ID);
+      // The getElementById method in JavaScript returns a reference to the first element with the specified ID attribute value in the document. 
+      // If no element with the specified ID is found, it returns null.
       if (!container) {
+        // Container creation
         container = document.createElement("div");
         container.id = HIGHLIGHT_CONTAINER_ID;
         container.style.position = "fixed";
@@ -294,6 +301,8 @@
 
       // Update positions on scroll
       const updatePositions = () => {
+        //The getBoundingClientRect method is a built-in JavaScript method that returns a 
+        //DOMRect object providing information about the size of an element and its position relative to the viewport.
         const newRect = element.getBoundingClientRect();
         let newIframeOffset = { x: 0, y: 0 };
 
@@ -322,7 +331,9 @@
         label.style.top = `${newLabelTop}px`;
         label.style.left = `${newLabelLeft}px`;
       };
-
+      //The addEventListener method in JavaScript attaches an event handler to a specified event on an element.
+      //In this case, it attaches the updatePositions function to both the scroll and resize events on the window object,
+      //so updatePositions will be called whenever the window is scrolled or resized.
       window.addEventListener('scroll', updatePositions);
       window.addEventListener('resize', updatePositions);
 
@@ -340,7 +351,11 @@
     let currentElement = element;
 
     while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
-      // Stop if we hit a shadow root or iframe
+      // Stop if we hit a shadow root or iframe.
+      // Traversal stops when encountering a shadow root or an iframe because these elements represent boundaries in the DOM tree.
+      //Shadow roots encapsulate their contents, creating a separate DOM context, while iframes embed external content,
+      //making it necessary to handle them separately. This ensures that the traversal logic respects these boundaries
+      //and does not attempt to cross them.
       if (
         stopAtBoundary &&
         (currentElement.parentNode instanceof ShadowRoot ||
@@ -421,8 +436,9 @@
     if (!element || !element.tagName) return false;
 
     // Always accept body and common container elements
+    // Might be good to add span
     const alwaysAccept = new Set([
-      "body", "div", "main", "article", "section", "nav", "header", "footer"
+      "body", "div", "main", "article", "section", "nav", "header", "footer", "span",
     ]);
     const tagName = element.tagName.toLowerCase();
 
