@@ -441,7 +441,7 @@
       "body", "div", "main", "article", "section", "nav", "header", "footer", "span",
     ]);
     const tagName = element.tagName.toLowerCase();
-
+    
     if (alwaysAccept.has(tagName)) return true;
 
     const leafElementDenyList = new Set([
@@ -505,16 +505,29 @@
         return true;
       }
     }
-
+    
     // Base interactive elements and roles
+    //Interactive Elements: These are specific HTML tags like "a", "button", "input", etc., that are inherently interactive.
+    //They are recognized by their tag names and are used to identify elements that users can interact with directly.
     const interactiveElements = new Set([
       "a", "button", "details", "embed", "input", "menu", "menuitem",
       "object", "select", "textarea", "canvas", "summary", "dialog",
       "banner"
     ]);
-
-    const interactiveRoles = new Set(['button-icon', 'dialog', 'button-text-icon-only', 'treeitem', 'alert', 'grid', 'progressbar', 'radio', 'checkbox', 'menuitem', 'option', 'switch', 'dropdown', 'scrollbar', 'combobox', 'a-button-text', 'button', 'region', 'textbox', 'tabpanel', 'tab', 'click', 'button-text', 'spinbutton', 'a-button-inner', 'link', 'menu', 'slider', 'listbox', 'a-dropdown-button', 'button-icon-only', 'searchbox', 'menuitemradio', 'tooltip', 'tree', 'menuitemcheckbox']);
-
+    //Interactive Roles: These are ARIA roles like "button", "dialog", "checkbox", etc.,
+    //which indicate interactivity for accessibility purposes. They are used to ensure
+    //that assistive technologies recognize and properly handle these elements.
+    const interactiveRoles = new Set(['button-icon', 'dialog', 'button-text-icon-only',
+                                      'treeitem', 'alert', 'grid', 'progressbar', 'radio',
+                                      'checkbox', 'menuitem', 'option', 'switch', 'dropdown',
+                                      'scrollbar', 'combobox', 'a-button-text', 'button', 
+                                      'region', 'textbox', 'tabpanel', 'tab', 'click', 'button-text',
+                                      'spinbutton',
+                                      'a-button-inner', 'link', 'menu', 'slider', 'listbox', 
+                                      'a-dropdown-button',
+                                      'button-icon-only', 'searchbox', 'menuitemradio',
+                                      'tooltip', 'tree', 'menuitemcheckbox'
+                                     ]);
     const tagName = element.tagName.toLowerCase();
     const role = element.getAttribute("role");
     const ariaRole = element.getAttribute("aria-role");
