@@ -603,7 +603,20 @@
     )) {
       return true;
     }
+    // Add these checks after existing interactive role checks
+    // Check for elements with click handlers added via addEventListener
+    const hasEventListener = element.hasEventListener?.('click') || 
+      (element._events?.click?.length > 0); // Some frameworks track events this way
 
+    // Add custom tile detection
+    const isCustomTile = 
+      element.classList.contains('heycash-app-survey-tile') ||
+      element.classList.contains('survey-item') ||
+      element.getAttribute('data-test-id')?.startsWith('ps-survey-');
+    
+    if (hasEventListener || isCustomTile) {
+      return true;
+    }
     // Get computed style
     const style = window.getComputedStyle(element);
 
@@ -632,6 +645,47 @@
           "focus",
           "blur",
         ];
+        
+        standardEvents.forEach(type => {
+          const handler = el[`on${type}`];
+          if (handler) {
+            listeners[type] = [{ listener: handler, useCapture: false }];
+          }
+        });
+    
+        // ADD THESE FRAMEWORK-SPECIFIC CHECKS:
+        // Check for React-style event storage
+        if (el._reactProps) {
+          Object.keys(el._reactProps).forEach(key => {
+            if (key.startsWith('on')) {
+              const type = key.slice(2).toLowerCase();
+              listeners[type] = listeners[type] || [];
+              listeners[type].push({ listener: el._reactProps[key], useCapture: false });
+            }
+          });
+        }
+        
+        // Check for Vue-style event storage
+        if (el.__vue__) {
+          const vueEvents = el.__vue__.$listeners;
+          if (vueEvents) {
+            Object.keys(vueEvents).forEach(type => {
+              listeners[type] = listeners[type] || [];
+              listeners[type].push({ listener: vueEvents[type], useCapture: false });
+            });
+          }
+        }
+        
+        // Check for jQuery event storage
+        if (el._jqueryEventData) {
+          Object.keys(el._jqueryEventData).forEach(type => {
+            listeners[type] = listeners[type] || [];
+            listeners[type].push(...el._jqueryEventData[type].map(handler => ({
+              listener: handler,
+              useCapture: false
+            })));
+          });
+        }
 
         for (const type of eventTypes) {
           const handler = el[`on${type}`];
@@ -675,7 +729,8 @@
       hasClickHandler ||
       hasClickListeners ||
       isDraggable ||
-      isContentEditable
+      isContentEditable ||
+      isCustomTile // Custom tile returner
     );
   }
 
@@ -825,6 +880,25 @@
    * Creates a node data object for a given node and its descendants.
    */
   function buildDomTree(node, parentIframe = null) {
+    // ... (after the buildDomTree function definition)
+    // Add MutationObserver here
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            if (isInteractiveElement(node)) {
+              // Force re-highlighting
+              buildDomTree(document.body);
+            }
+          }
+        });
+      });
+    });
+    
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    // ... (rest of the code, like return statements)
+    
     if (debugMode) PERF_METRICS.nodeMetrics.totalNodes++;
 
     if (!node || node.id === HIGHLIGHT_CONTAINER_ID) {
