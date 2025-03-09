@@ -349,7 +349,8 @@
   function getXPathTree(element, stopAtBoundary = true) {
     const segments = [];
     let currentElement = element;
-
+    // Node.ELEMENT_NODE: This is a constant that is defined on the Node object itself (that's why we access it as Node.ELEMENT_NODE). It holds the numerical value 1.
+    // nodeType property: Every DOM node object has a property called nodeType. This property holds a number that tells you what kind of node it is.
     while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
       // Stop if we hit a shadow root or iframe.
       // Traversal stops when encountering a shadow root or an iframe because these elements represent boundaries in the DOM tree.
@@ -392,6 +393,8 @@
   function isTextNodeVisible(textNode) {
     try {
       const range = document.createRange();
+      //Think of document.createRange() as getting a virtual cursor that you can use to define a selection on the webpage,
+      //just like you would with your mouse cursor.
       range.selectNodeContents(textNode);
       const rect = range.getBoundingClientRect();
 
@@ -436,7 +439,7 @@
     if (!element || !element.tagName) return false;
 
     // Always accept body and common container elements
-    // Might be good to add span
+    // Might be good to add span (I added it to see if it fixes anything)
     const alwaysAccept = new Set([
       "body", "div", "main", "article", "section", "nav", "header", "footer", "span",
     ]);
